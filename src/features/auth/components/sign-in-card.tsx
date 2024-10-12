@@ -16,17 +16,13 @@ import { TypeOf, z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { signinRequestSchema } from "../schemas";
 
-const formSchema = z.object({
-  email: z.string().trim().email().toLowerCase(),
-  password: z.string().min(1, { message: "password cannot be empty" }),
-});
-
-type SigninParams = TypeOf<typeof formSchema>;
+type SigninParams = TypeOf<typeof signinRequestSchema>;
 
 export const SignInCard = () => {
   const form = useForm({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(signinRequestSchema),
     defaultValues: { email: "", password: "" },
   });
 
