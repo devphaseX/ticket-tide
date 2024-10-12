@@ -1,6 +1,6 @@
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
-import * as z from "zod";
+import { z, TypeOf } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
@@ -29,11 +29,15 @@ const formSchema = z.object({
   password: z.string().min(8),
 });
 
+type RegisterUserParams = TypeOf<typeof formSchema>;
+
 export const SignUpCard = () => {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: { name: "", email: "", password: "" },
   });
+
+  async function onSubmitRegister(data: RegisterUserParams) {}
 
   return (
     <Card className="w-full h-full md:w-[487px] border-none shadow-none">
@@ -57,7 +61,10 @@ export const SignUpCard = () => {
 
       <CardContent className="p-7">
         <Form {...form}>
-          <form className="space-y-4">
+          <form
+            className="space-y-4"
+            onSubmit={form.handleSubmit(onSubmitRegister)}
+          >
             <FormField
               control={form.control}
               name="name"
@@ -132,6 +139,17 @@ export const SignUpCard = () => {
           <FaGithub className="mr-2 size-5" />
           Login with Github
         </Button>
+      </CardContent>
+
+      <div className="px-7">
+        <DottedSeparator />
+      </div>
+
+      <CardContent className="p-7 flex items-center justify-center">
+        <p>Already have an account?</p>
+        <Link href="/sign-in">
+          <span className="text-blue-700">&nbsp;Sign in</span>
+        </Link>
       </CardContent>
     </Card>
   );

@@ -12,20 +12,25 @@ import { DottedSeparator } from "@/components/dotted-separator";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { z } from "zod";
+import { TypeOf, z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 
 const formSchema = z.object({
   email: z.string().trim().email().toLowerCase(),
   password: z.string().min(1, { message: "password cannot be empty" }),
 });
 
+type SigninParams = TypeOf<typeof formSchema>;
+
 export const SignInCard = () => {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: { email: "", password: "" },
   });
+
+  async function onSubmitSignin(data: SigninParams) {}
 
   return (
     <Card className="w-full h-full md:w-[487px] border-none shadow-none">
@@ -39,7 +44,10 @@ export const SignInCard = () => {
 
       <CardContent className="p-7">
         <Form {...form}>
-          <form className="space-y-4">
+          <form
+            className="space-y-4"
+            onSubmit={form.handleSubmit(onSubmitSignin)}
+          >
             <FormField
               control={form.control}
               name="email"
@@ -101,6 +109,16 @@ export const SignInCard = () => {
           <FaGithub className="mr-2 size-5" />
           Login with Github
         </Button>
+      </CardContent>
+      <div className="px-7">
+        <DottedSeparator />
+      </div>
+
+      <CardContent className="p-7 flex items-center justify-center">
+        <p>Don&apos; t have an account?</p>
+        <Link href="/sign-up">
+          <span className="text-blue-700">&nbsp;Sign up</span>
+        </Link>
       </CardContent>
     </Card>
   );
