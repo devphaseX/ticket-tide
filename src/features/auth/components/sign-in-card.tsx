@@ -17,16 +17,22 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { signinRequestSchema } from "../schemas";
+import { useLogin } from "@/features/api/mutations/use-login";
 
 type SigninParams = TypeOf<typeof signinRequestSchema>;
 
 export const SignInCard = () => {
+  const { mutate: signin, status } = useLogin();
+
   const form = useForm({
     resolver: zodResolver(signinRequestSchema),
     defaultValues: { email: "", password: "" },
+    disabled: status === "pending",
   });
 
-  async function onSubmitSignin(data: SigninParams) {}
+  async function onSubmitSignin(data: SigninParams) {
+    signin({ json: data });
+  }
 
   return (
     <Card className="w-full h-full md:w-[487px] border-none shadow-none">

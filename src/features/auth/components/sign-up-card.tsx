@@ -22,22 +22,21 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-
-const formSchema = z.object({
-  name: z.string().trim().min(1),
-  email: z.string().trim().email().toLowerCase(),
-  password: z.string().min(8),
-});
-
-type RegisterUserParams = TypeOf<typeof formSchema>;
+import { RegisterReqPayloadSchema, registerReqPayloadSchema } from "../schemas";
+import { useRegister } from "@/features/api/mutations/use-register";
 
 export const SignUpCard = () => {
+  const { mutate: signUp, isPending } = useRegister();
+
   const form = useForm({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(registerReqPayloadSchema),
     defaultValues: { name: "", email: "", password: "" },
+    disabled: isPending,
   });
 
-  async function onSubmitRegister(data: RegisterUserParams) {}
+  async function onSubmitRegister(data: RegisterReqPayloadSchema) {
+    signUp({ json: data });
+  }
 
   return (
     <Card className="w-full h-full md:w-[487px] border-none shadow-none">
