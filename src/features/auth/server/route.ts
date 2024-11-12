@@ -8,6 +8,11 @@ import { AUTH_COOKIE } from "../auth.constants";
 import { sessionMiddleware } from "@/lib/session_middleware";
 
 const app = new Hono()
+  .get("/current", sessionMiddleware, (c) => {
+    const user = c.get("user");
+
+    return c.json({ success: true, data: user });
+  })
   .post("/sign-in", zValidator("json", signinRequestSchema), async (c) => {
     const reqPayload = c.req.valid("json");
 
