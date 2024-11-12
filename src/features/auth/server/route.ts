@@ -1,10 +1,11 @@
 import { ID, AppwriteException } from "node-appwrite";
 import { Hono } from "hono";
-import { setCookie } from "hono/cookie";
+import { deleteCookie, setCookie } from "hono/cookie";
 import { zValidator } from "@hono/zod-validator";
 import { registerReqPayloadSchema, signinRequestSchema } from "../schemas";
 import { createAdminClient } from "@/lib/appwrite";
 import { AUTH_COOKIE } from "../auth.constants";
+import { sessionMiddleware } from "@/lib/session_middleware";
 
 const app = new Hono()
   .post("/sign-in", zValidator("json", signinRequestSchema), async (c) => {
@@ -49,6 +50,12 @@ const app = new Hono()
     });
 
     return c.json({ sucess: true, message: "registration completed" });
+  })
+  .post("/logout", sessionMiddleware, async (c) => {
+    const account = c.get("account");
+    deleteCookie(c, AUTH_COOKIE);
+    await account.deleteSession("current");
+    return c.json({ success: true });
   });
 
 export default app;
