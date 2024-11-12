@@ -6,6 +6,8 @@ import { registerReqPayloadSchema, signinRequestSchema } from "../schemas";
 import { createAdminClient } from "@/lib/appwrite";
 import { AUTH_COOKIE } from "../auth.constants";
 import { sessionMiddleware } from "@/lib/session_middleware";
+import { errorResponse, successResponse } from "@/lib/api_response";
+import StatusCodes from "http-status";
 
 const app = new Hono()
   .get("/current", sessionMiddleware, (c) => {
@@ -30,12 +32,14 @@ const app = new Hono()
         sameSite: "strict",
         expires: new Date(session.expire),
       });
-      return c.json({ success: true });
+
+      return successResponse(c);
     } catch (e) {
       if (Object(e) === e && e instanceof AppwriteException) {
-        return c.json({ success: false, message: e.message });
+        return errorResponse(c, e.message);
       }
-      return c.json({ success: false, message: "failed to sign in user" });
+
+      return errorResponse(c, "failed to sign in user");
     }
   })
   .post("/sign-up", zValidator("json", registerReqPayloadSchema), async (c) => {
@@ -54,13 +58,19 @@ const app = new Hono()
       expires: new Date(session.expire),
     });
 
-    return c.json({ sucess: true, message: "registration completed" });
+    return successResponse(
+      c,
+      undefined,
+      StatusCodes.CREATED,
+      "registration completed",
+    );
   })
   .post("/logout", sessionMiddleware, async (c) => {
     const account = c.get("account");
     deleteCookie(c, AUTH_COOKIE);
     await account.deleteSession("current");
-    return c.json({ success: true });
+
+    return successResponse(c);
   });
 
 export default app;

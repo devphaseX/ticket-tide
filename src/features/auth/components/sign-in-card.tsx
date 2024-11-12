@@ -18,6 +18,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { signinRequestSchema } from "../schemas";
 import { useLogin } from "@/features/api/mutations/use-login";
+import { toast } from "sonner";
 
 type SigninParams = TypeOf<typeof signinRequestSchema>;
 
@@ -31,7 +32,21 @@ export const SignInCard = () => {
   });
 
   async function onSubmitSignin(data: SigninParams) {
-    signin({ json: data });
+    signin(
+      { json: data },
+      {
+        onSettled(data, error) {
+          console.log(data);
+          if (!data?.success) {
+            return toast.error(
+              data?.message ?? "an error occurred while signing in",
+            );
+          }
+
+          toast.success("signin succesful");
+        },
+      },
+    );
   }
 
   return (
