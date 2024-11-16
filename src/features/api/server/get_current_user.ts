@@ -1,24 +1,28 @@
 import { AUTH_COOKIE } from "@/features/auth/auth.constants";
+import { env } from "@/lib/env";
 import { client } from "@/lib/rpc";
-import { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
 import { cookies } from "next/headers";
+import { Account, Client } from "node-appwrite";
 import { cache } from "react";
 import "server-only";
 
 export const auth = cache(async () => {
   try {
-    const cookie = await Promise.resolve(cookies());
-    const resp = await client.api.auth.current.$get(undefined, {
-      headers: {
-        Authorization: `bearer ${cookie.get(AUTH_COOKIE)?.value ?? ""}`,
-      },
-    });
-    const respPayload = await resp.json();
+    const client = new Client()
+      .setEndpoint(env.NEXT_APPWRITE_ENDPOINT)
+      .setProject(env.NEXT_APPWRITE_PROJECT_ID);
 
-    if (!respPayload.success) {
+    const cookie = await cookies();
+    const session = cookie.get(AUTH_COOKIE)?.value;
+
+    if (!session) {
       return null;
     }
-    return respPayload.data;
+    client.setSession(session);
+    const account = new Account(client);
+    const user = await account.get();
+
+    return user;
   } catch (e) {
     console.log("server get user error ", e);
     return null;

@@ -6,14 +6,9 @@ import { redirect } from "next/navigation";
 export default async function Home() {
   const user = await auth();
 
-  console.log({ email: user?.email });
   if (!user) {
     return redirect("/sign-in");
   }
 
-  return (
-    <div>
-      <UserButton />
-    </div>
-  );
+  return <div>This is a homepage</div>;
 }

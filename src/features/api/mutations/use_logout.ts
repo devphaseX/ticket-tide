@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 
 export const useLogout = () => {
   const queryClient = useQueryClient();
-  const router = useRouter();
   return useMutation({
     mutationKey: ["user_logout"],
     mutationFn: async () => {
@@ -13,8 +12,7 @@ export const useLogout = () => {
     },
 
     onSuccess: async () => {
-      router.refresh();
-      await queryClient.invalidateQueries({ queryKey: ["current_user"] });
+      window.location.reload();
     },
   });
 };
