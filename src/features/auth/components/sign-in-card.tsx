@@ -41,9 +41,11 @@ export const SignInCard = () => {
       { json: data },
       {
         async onSettled(data, error) {
-          if (!data?.success) {
+          if (error || !data?.success) {
             return toast.error(
-              data?.message ?? "an error occurred while signing in",
+              (data?.message ?? error)
+                ? String(error)
+                : "an error occurred while signing in",
             );
           }
 
