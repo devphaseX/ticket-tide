@@ -1,3 +1,4 @@
+"use client";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 
@@ -19,24 +20,27 @@ import Link from "next/link";
 import { signinRequestSchema } from "../schemas";
 import { useLogin } from "@/features/api/mutations/use-login";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 type SigninParams = TypeOf<typeof signinRequestSchema>;
 
 export const SignInCard = () => {
-  const { mutate: signin, status } = useLogin();
+  const { mutate: signin, isPending } = useLogin();
+  const router = useRouter();
+  const queryClient = useQueryClient();
 
   const form = useForm({
     resolver: zodResolver(signinRequestSchema),
     defaultValues: { email: "", password: "" },
-    disabled: status === "pending",
+    disabled: isPending,
   });
 
   async function onSubmitSignin(data: SigninParams) {
     signin(
       { json: data },
       {
-        onSettled(data, error) {
-          console.log(data);
+        async onSettled(data, error) {
           if (!data?.success) {
             return toast.error(
               data?.message ?? "an error occurred while signing in",
@@ -44,6 +48,8 @@ export const SignInCard = () => {
           }
 
           toast.success("signin succesful");
+          router.refresh();
+          await queryClient.invalidateQueries({ queryKey: ["current_user"] });
         },
       },
     );
@@ -96,7 +102,7 @@ export const SignInCard = () => {
                 </FormItem>
               )}
             />
-            <Button disabled={false} size="lg" className="w-full">
+            <Button disabled={isPending} size="lg" className="w-full">
               Login
             </Button>
           </form>
@@ -108,7 +114,7 @@ export const SignInCard = () => {
       </div>
       <CardContent className="p-7 flex flex-col gap-y-4">
         <Button
-          disabled={false}
+          disabled={isPending}
           variant="secondary"
           size="lg"
           className="w-full"
@@ -118,7 +124,7 @@ export const SignInCard = () => {
         </Button>
 
         <Button
-          disabled={false}
+          disabled={isPending}
           variant="secondary"
           size="lg"
           className="w-full"

@@ -1,3 +1,5 @@
+"use client";
+
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 import { z, TypeOf } from "zod";
@@ -24,10 +26,13 @@ import {
 } from "@/components/ui/form";
 import { RegisterReqPayloadSchema, registerReqPayloadSchema } from "../schemas";
 import { useRegister } from "@/features/api/mutations/use-register";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 export const SignUpCard = () => {
   const { mutate: signUp, isPending } = useRegister();
-
+  const queryClient = useQueryClient();
+  const router = useRouter();
   const form = useForm({
     resolver: zodResolver(registerReqPayloadSchema),
     defaultValues: { name: "", email: "", password: "" },
@@ -35,7 +40,15 @@ export const SignUpCard = () => {
   });
 
   async function onSubmitRegister(data: RegisterReqPayloadSchema) {
-    signUp({ json: data });
+    signUp(
+      { json: data },
+      {
+        onSuccess: async () => {
+          router.refresh();
+          await queryClient.invalidateQueries({ queryKey: ["current_user"] });
+        },
+      },
+    );
   }
 
   return (
@@ -108,7 +121,7 @@ export const SignUpCard = () => {
                 </FormItem>
               )}
             />
-            <Button disabled={false} size="lg" className="w-full">
+            <Button disabled={isPending} size="lg" className="w-full">
               Sign up
             </Button>
           </form>
@@ -120,7 +133,7 @@ export const SignUpCard = () => {
       </div>
       <CardContent className="p-7 flex flex-col gap-y-4">
         <Button
-          disabled={false}
+          disabled={isPending}
           variant="secondary"
           size="lg"
           className="w-full"
@@ -130,7 +143,7 @@ export const SignUpCard = () => {
         </Button>
 
         <Button
-          disabled={false}
+          disabled={isPending}
           variant="secondary"
           size="lg"
           className="w-full"

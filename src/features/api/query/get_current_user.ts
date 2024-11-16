@@ -1,3 +1,5 @@
+"use client";
+
 import { client } from "@/lib/rpc";
 import { useQuery } from "@tanstack/react-query";
 

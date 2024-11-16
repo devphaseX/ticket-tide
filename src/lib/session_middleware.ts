@@ -34,14 +34,15 @@ export const sessionMiddleware = createMiddleware<SesssionContext>(
       .setEndpoint(env.NEXT_APPWRITE_ENDPOINT)
       .setProject(env.NEXT_APPWRITE_PROJECT_ID);
 
-    const session = getCookie(c, AUTH_COOKIE);
+    const headers = c.req.header();
+    let session = getCookie(c, AUTH_COOKIE);
+    session ??= headers["authorization"]?.split("bearer").pop()?.trim();
 
     if (!session) {
       return c.json({ error: "unauthorized" }, StatusCodes.UNAUTHORIZED);
     }
 
     client.setSession(session);
-
     const account = new Account(client);
     const databases = new Databases(client);
     const storage = new Storage(client);
