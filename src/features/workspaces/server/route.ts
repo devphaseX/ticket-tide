@@ -11,18 +11,37 @@ import StatusCodes from "http-status";
 const app = new Hono().post(
   "/",
   sessionMiddleware,
-  zValidator("json", createWorkspaceSchema),
+  zValidator("form", createWorkspaceSchema),
   async (c) => {
     const db = c.get("databases");
     const user = c.get("user");
+    const storage = c.get("storage");
 
-    const { name } = c.req.valid("json");
+    const { name, image } = c.req.valid("form");
+    console.log({ name, image });
     try {
+      let uploadedImageUrl: string | undefined;
+
+      if (image instanceof File) {
+        const file = await storage.createFile(
+          env.NEXT_PUBLIC_APPWRITE_IMAGES_BUCKET_ID,
+          ID.unique(),
+          image,
+        );
+
+        const imageContent = await storage.getFilePreview(
+          env.NEXT_PUBLIC_APPWRITE_IMAGES_BUCKET_ID,
+          file.$id,
+        );
+
+        uploadedImageUrl = `data:${image.type ?? "image/png"};bas64,${Buffer.from(imageContent).toString("base64")}`;
+      }
+
       const workspace = await db.createDocument(
         env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         env.NEXT_PUBLIC_APPWRITE_WORKSPACES_ID,
         ID.unique(),
-        { name, userId: user.$id },
+        { name, userId: user.$id, imageUrl: uploadedImageUrl },
       );
 
       return successResponse(c, { data: workspace }, StatusCodes.CREATED);
