@@ -8,6 +8,7 @@ const envSchema = z.object({
   NEXT_PUBLIC_APPWRITE_DATABASE_ID: z.string().min(1),
   NEXT_PUBLIC_APPWRITE_WORKSPACES_ID: z.string().min(1),
   NEXT_PUBLIC_APPWRITE_IMAGES_BUCKET_ID: z.string().min(1),
+  NEXT_PUBLIC_APPWRITE_MEMBERS_ID: z.string().min(1),
 });
 
 type AppEnv = TypeOf<typeof envSchema>;
