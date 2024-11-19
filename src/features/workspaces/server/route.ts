@@ -8,50 +8,60 @@ import { errorResponse, successResponse } from "@/lib/api_response";
 
 import StatusCodes from "http-status";
 
-const app = new Hono().post(
-  "/",
-  sessionMiddleware,
-  zValidator("form", createWorkspaceSchema),
-  async (c) => {
-    const db = c.get("databases");
-    const user = c.get("user");
-    const storage = c.get("storage");
+const app = new Hono()
+  .get("/", sessionMiddleware, async (c) => {
+    const database = c.get("databases");
+    const workspaces = await database.listDocuments(
+      env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+      env.NEXT_PUBLIC_APPWRITE_WORKSPACES_ID,
+    );
 
-    const { name, image } = c.req.valid("form");
-    console.log({ name, image });
-    try {
-      let uploadedImageUrl: string | undefined;
+    return successResponse(c, workspaces);
+  })
+  .post(
+    "/",
+    sessionMiddleware,
+    zValidator("form", createWorkspaceSchema),
+    async (c) => {
+      const db = c.get("databases");
+      const user = c.get("user");
+      const storage = c.get("storage");
 
-      if (image instanceof File) {
-        const file = await storage.createFile(
-          env.NEXT_PUBLIC_APPWRITE_IMAGES_BUCKET_ID,
+      const { name, image } = c.req.valid("form");
+      console.log({ name, image });
+      try {
+        let uploadedImageUrl: string | undefined;
+
+        if (image instanceof File) {
+          const file = await storage.createFile(
+            env.NEXT_PUBLIC_APPWRITE_IMAGES_BUCKET_ID,
+            ID.unique(),
+            image,
+          );
+
+          const imageContent = await storage.getFilePreview(
+            env.NEXT_PUBLIC_APPWRITE_IMAGES_BUCKET_ID,
+            file.$id,
+          );
+
+          uploadedImageUrl = `data:${image.type ?? "image/png"};base64,${Buffer.from(imageContent).toString("base64")}`;
+        }
+
+        const workspace = await db.createDocument(
+          env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+          env.NEXT_PUBLIC_APPWRITE_WORKSPACES_ID,
           ID.unique(),
-          image,
+          { name, userId: user.$id, imageUrl: uploadedImageUrl },
         );
 
-        const imageContent = await storage.getFilePreview(
-          env.NEXT_PUBLIC_APPWRITE_IMAGES_BUCKET_ID,
-          file.$id,
-        );
-
-        uploadedImageUrl = `data:${image.type ?? "image/png"};bas64,${Buffer.from(imageContent).toString("base64")}`;
+        return successResponse(c, { data: workspace }, StatusCodes.CREATED);
+      } catch (e) {
+        console.log(`[CREATE WORKSPACE ERROR]`, e);
+        if (e instanceof AppwriteException) {
+          return errorResponse(c, e.message);
+        }
+        return errorResponse(c, "failed to create workspace");
       }
-
-      const workspace = await db.createDocument(
-        env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-        env.NEXT_PUBLIC_APPWRITE_WORKSPACES_ID,
-        ID.unique(),
-        { name, userId: user.$id, imageUrl: uploadedImageUrl },
-      );
-
-      return successResponse(c, { data: workspace }, StatusCodes.CREATED);
-    } catch (e) {
-      console.log(`[CREATE WORKSPACE ERROR]`, e);
-      if (e instanceof AppwriteException) {
-        return errorResponse(c, e.message);
-      }
-      return errorResponse(c, "failed to create workspace");
-    }
-  },
-);
+    },
+  );
 export default app;
