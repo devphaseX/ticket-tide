@@ -9,10 +9,20 @@ import {
   SelectItem,
 } from "./ui/select";
 import { WorkspaceAvatar } from "@/features/workspaces/components/workspace_avatar";
+import { useRouter } from "next/navigation";
+import { useWorkspaceId } from "@/features/workspaces/hooks/use_workspace_id";
 
 export const WorkspaceSwitcher = () => {
+  const workspaceId = useWorkspaceId();
   const { data } = useGetWorkspaces();
-  console.log(data);
+
+  const router = useRouter();
+
+  const onSelectSwitchWorkspace = (id: string) => {
+    router.push(`/workspaces/${id}`);
+    router.refresh();
+  };
+
   return (
     <div className="flex flex-col gap-y-2">
       <div className="flex items-center justify-between">
@@ -23,7 +33,7 @@ export const WorkspaceSwitcher = () => {
         />
       </div>
 
-      <Select>
+      <Select onValueChange={onSelectSwitchWorkspace} value={workspaceId}>
         <SelectTrigger className="w-full bg-neutral-200 font-medium p-1">
           <SelectValue placeholder="No workspace selected" />
         </SelectTrigger>
