@@ -12,7 +12,6 @@ export const WorkspaceAvatar = ({
   name,
   className,
 }: WorkspaceAvatarProps) => {
-  console.log({ image });
   if (image) {
     return (
       <div

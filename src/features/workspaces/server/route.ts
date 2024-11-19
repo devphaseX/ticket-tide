@@ -37,8 +37,6 @@ const app = new Hono()
       ],
     );
 
-    console.log({ workspaces });
-
     return successResponse(c, workspaces);
   })
   .post(
@@ -51,7 +49,6 @@ const app = new Hono()
       const storage = c.get("storage");
 
       const { name, image } = c.req.valid("form");
-      console.log({ name, image });
       try {
         let uploadedImageUrl: string | undefined;
 

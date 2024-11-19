@@ -9,12 +9,13 @@ import {
   SelectItem,
 } from "./ui/select";
 import { WorkspaceAvatar } from "@/features/workspaces/components/workspace_avatar";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use_workspace_id";
 
 export const WorkspaceSwitcher = () => {
   const workspaceId = useWorkspaceId();
   const { data } = useGetWorkspaces();
+  const path = usePathname();
 
   const router = useRouter();
 
@@ -30,6 +31,11 @@ export const WorkspaceSwitcher = () => {
         <RiAddCircleFill
           className="size-5 text-neutral-500 cursor-pointer
         hover:opacity-75 transition"
+          onClick={() => {
+            if (path !== "/workspaces/create") {
+              router.push("/workspaces/create");
+            }
+          }}
         />
       </div>
 

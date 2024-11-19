@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ImageIcon } from "lucide-react";
 import { useRef } from "react";
+import { useRouter } from "next/navigation";
 
 interface CreateWorkspaceFormProps {
   onCancel?: () => void;
@@ -34,6 +35,8 @@ export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
     disabled: isPending,
   });
 
+  const router = useRouter();
+
   const onSubmit = (data: CreateWorkspaceFormData) => {
     data = {
       ...data,
@@ -44,14 +47,14 @@ export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
       { form: data },
       {
         onSettled: (resp, err) => {
-          console.log({ err, resp });
           if (err || !resp?.success) {
             return toast.error(resp?.message ?? String(err));
           }
 
+          //redirect to the new workspace
+          router.push(`/workspaces/${resp.data.$id}`);
           toast.success("workspace created sucessfully");
           form.reset();
-          //redirect to the new workspace
         },
       },
     );
