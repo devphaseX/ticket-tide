@@ -8,6 +8,7 @@ import { errorResponse, successResponse } from "@/lib/api_response";
 
 import StatusCodes from "http-status";
 import { MemberRole } from "@/features/members/member.types";
+import { generateInviteCode } from "@/lib/generate_invite_code";
 
 const app = new Hono()
   .get("/", sessionMiddleware, async (c) => {
@@ -69,11 +70,12 @@ const app = new Hono()
           uploadedImageUrl = `data:${image.type ?? "image/png"};base64,${Buffer.from(imageContent).toString("base64")}`;
         }
 
+        const inviteCode = generateInviteCode(10);
         const workspace = await db.createDocument(
           env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
           env.NEXT_PUBLIC_APPWRITE_WORKSPACES_ID,
           ID.unique(),
-          { name, userId: user.$id, imageUrl: uploadedImageUrl },
+          { name, userId: user.$id, imageUrl: uploadedImageUrl, inviteCode },
         );
 
         await db.createDocument(
