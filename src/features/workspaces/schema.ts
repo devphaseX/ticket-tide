@@ -12,7 +12,7 @@ export const createWorkspaceSchema = z.object({
 
 export type CreateWorkspaceFormData = TypeOf<typeof createWorkspaceSchema>;
 
-export const updateWorkspaceSchema = z.object({
+export const editWorkspaceSchema = z.object({
   name: z
     .string()
     .trim()
@@ -27,4 +27,4 @@ export const updateWorkspaceSchema = z.object({
     .optional(),
 });
 
-export type UpdateWorkspaceFormData = TypeOf<typeof createWorkspaceSchema>;
+export type EditWorkspaceFormData = TypeOf<typeof createWorkspaceSchema>;

@@ -1,6 +1,6 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import { createWorkspaceSchema, updateWorkspaceSchema } from "../schema";
+import { createWorkspaceSchema, editWorkspaceSchema } from "../schema";
 import { sessionMiddleware } from "@/lib/session_middleware";
 import { env } from "@/lib/env";
 import { AppwriteException, ID, Query } from "node-appwrite";
@@ -9,6 +9,7 @@ import { errorResponse, successResponse } from "@/lib/api_response";
 import StatusCodes from "http-status";
 import { MemberRole } from "@/features/members/member.types";
 import { generateInviteCode } from "@/lib/generate_invite_code";
+import { getMember } from "./utils";
 
 const app = new Hono()
   .get("/", sessionMiddleware, async (c) => {
@@ -100,7 +101,7 @@ const app = new Hono()
   .patch(
     "/:workspaceId",
     sessionMiddleware,
-    zValidator("form", updateWorkspaceSchema),
+    zValidator("form", editWorkspaceSchema),
     async (c) => {
       const db = c.get("databases");
       const storage = c.get("storage");
@@ -110,25 +111,15 @@ const app = new Hono()
       const { name, image } = c.req.valid("form");
 
       try {
-        const memberships = await db.listDocuments(
-          env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-          env.NEXT_PUBLIC_APPWRITE_MEMBERS_ID,
-          [
-            Query.equal("userId", user.$id),
-            Query.equal("workspaceId", workspaceId),
-          ],
-        );
+        const member = await getMember({
+          databases: db,
+          userId: user.$id,
+          workspaceId,
+        });
 
-        if (!memberships.total) {
+        if (!(member && member.role === MemberRole.ADMIN)) {
           c.status(StatusCodes.NOT_FOUND);
           return errorResponse(c, "not found");
-        }
-
-        const [member] = memberships.documents;
-
-        if (member.role !== MemberRole.ADMIN) {
-          c.status(StatusCodes.FORBIDDEN);
-          return errorResponse(c, `not found`);
         }
 
         const workspace = await db.getDocument(

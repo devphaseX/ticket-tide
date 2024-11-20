@@ -1,45 +1,68 @@
+"use client";
+
+import { useWorkspaceId } from "@/features/workspaces/hooks/use_workspace_id";
 import { cn } from "@/lib/utils";
 import { SettingsIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   GoCheckCircle,
   GoCheckCircleFill,
   GoHome,
   GoHomeFill,
 } from "react-icons/go";
+import { IconTree } from "react-icons/lib";
+import { isAsync } from "zod";
+
+type Route = {
+  label: string;
+  href: string | ((value: unknown) => string);
+  icon: IconTree;
+  activeIcon: IconTree;
+};
 
 const routes = [
-  { label: "Home", href: "", icon: GoHome, activeIcon: GoHomeFill },
+  {
+    label: "Home",
+    href: (workspaceId: string) => `/workspaces/${workspaceId}`,
+    icon: GoHome,
+    activeIcon: GoHomeFill,
+  },
   {
     label: "My Tasks",
-    href: "/tasks",
+    href: (workspaceId: string) => `/workspaces/${workspaceId}/tasks`,
     icon: GoCheckCircle,
     activeIcon: GoCheckCircleFill,
   },
 
   {
     label: "Settings",
-    href: "/settings",
+    href: (workspaceId: string) => `/workspaces/${workspaceId}/settings`,
     icon: SettingsIcon,
     activeIcon: SettingsIcon,
   },
 
   {
     label: "Members",
-    href: "/members",
+    href: (workspaceId: string) => `/workspaces/${workspaceId}/members`,
     icon: UsersIcon,
     activeIcon: UsersIcon,
   },
 ];
 
 export const Navigation = () => {
+  const workspaceId = useWorkspaceId();
+  const pathname = usePathname();
   return (
     <ul className="flex flex-col">
       {routes.map((item) => {
-        const isActive = false;
+        const href =
+          typeof item.href === "function" ? item.href(workspaceId) : item.href;
+        const isActive = pathname === href;
         const Icon = isActive ? item.activeIcon : item.icon;
+
         return (
-          <Link key={item.href} href={item.href}>
+          <Link key={href} href={href}>
             <div
               className={cn(
                 `flex items-center gap-2.5 p-2.5 rounded-md
