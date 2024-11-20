@@ -13,7 +13,11 @@ export const CreateWorkspaceModal = () => {
         router.back();
       }}
     >
-      <CreateWorkspaceForm />
+      <CreateWorkspaceForm
+        onCancel={() => {
+          router.back();
+        }}
+      />
     </ResponsiveModal>
   );
 };
