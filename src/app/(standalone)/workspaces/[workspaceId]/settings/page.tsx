@@ -19,12 +19,12 @@ const CurrentWorkspaceSettingsPage = async ({
 
   const workspace = await getWorkspace({ workspaceId: params.workspaceId });
   if (!workspace) {
-    return redirect("/");
+    return redirect(`/workspaces/${params.workspaceId}`);
   }
 
   return (
-    <div>
-      <EditWorkspaceForm initialValue={(workspace ?? {}) as Workspace} />
+    <div className="w-full lg:max-w-xl">
+      <EditWorkspaceForm initialValue={workspace as Workspace} />
     </div>
   );
 };

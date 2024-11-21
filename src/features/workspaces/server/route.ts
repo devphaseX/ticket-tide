@@ -163,7 +163,7 @@ const app = new Hono()
 
         return successResponse(
           c,
-          updatedWorkspace,
+          { data: updatedWorkspace },
           StatusCodes.OK,
           "workspace updated",
         );
