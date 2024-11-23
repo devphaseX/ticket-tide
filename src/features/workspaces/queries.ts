@@ -4,6 +4,7 @@ import { AUTH_COOKIE } from "../auth/auth.constants";
 import { Account, Client, Databases, Query } from "node-appwrite";
 import { env } from "@/lib/env";
 import { getMember } from "./server/utils";
+import { createSessionClient } from "@/lib/appwrite";
 
 export const getUserWorkspace = async () => {
   const resp = await client.api.workspaces.$get(undefined, {
@@ -26,17 +27,7 @@ export const getWorkspace = async ({
   workspaceId: string;
 }) => {
   try {
-    const client = new Client()
-      .setEndpoint(env.NEXT_APPWRITE_ENDPOINT)
-      .setProject(env.NEXT_APPWRITE_PROJECT_ID);
-
-    const session = (await cookies()).get(AUTH_COOKIE)?.value;
-
-    if (!session) return null;
-    client.setSession(session);
-
-    const db = new Databases(client);
-    const account = new Account(client);
+    const { account, databases: db } = await createSessionClient();
     const user = await account.get();
 
     if (!user) {

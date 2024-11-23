@@ -1,5 +1,5 @@
 import { auth } from "@/features/api/server/get_current_user";
-import { getWorkspace } from "@/features/workspaces/actions";
+import { getWorkspace } from "@/features/workspaces/queries";
 import { EditWorkspaceForm } from "@/features/workspaces/components/update_workspace_form";
 import { Workspace } from "@/lib/types";
 import { redirect } from "next/navigation";
@@ -23,7 +23,7 @@ const CurrentWorkspaceSettingsPage = async ({
   }
 
   return (
-    <div className="w-full lg:max-w-xl">
+    <div className="w-full lg:max-w-2xl">
       <EditWorkspaceForm initialValue={workspace as Workspace} />
     </div>
   );

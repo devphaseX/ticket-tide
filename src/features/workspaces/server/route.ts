@@ -176,5 +176,71 @@ const app = new Hono()
         return errorResponse(c, "failed to update workspace");
       }
     },
-  );
+  )
+  .delete("/:workspaceId", sessionMiddleware, async (c) => {
+    const db = c.get("databases");
+    const storage = c.get("storage");
+    const user = c.get("user");
+    const { workspaceId } = c.req.param();
+
+    const member = await getMember({
+      databases: db,
+      userId: user.$id,
+      workspaceId,
+    });
+
+    if (!(member && member.role === MemberRole.ADMIN)) {
+      c.status(StatusCodes.UNAUTHORIZED);
+      return errorResponse(c, "unauthorized");
+    }
+
+    //TODO: Delete member
+    const removeDoc = await db.deleteDocument(
+      env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+      env.NEXT_PUBLIC_APPWRITE_WORKSPACES_ID,
+      workspaceId,
+    );
+
+    if (!removeDoc) {
+      c.status(StatusCodes.NOT_FOUND);
+      return errorResponse(c, "workspace not found");
+    }
+
+    return successResponse(c, { data: { $id: workspaceId } });
+  })
+  .post("/:workspaceId/reset-invite-code", sessionMiddleware, async (c) => {
+    const db = c.get("databases");
+    const storage = c.get("storage");
+    const user = c.get("user");
+    const { workspaceId } = c.req.param();
+
+    const member = await getMember({
+      databases: db,
+      userId: user.$id,
+      workspaceId,
+    });
+
+    if (!(member && member.role === MemberRole.ADMIN)) {
+      c.status(StatusCodes.UNAUTHORIZED);
+      return errorResponse(c, "unauthorized");
+    }
+
+    const inviteCode = generateInviteCode(10);
+
+    const updatedWorkspace = await db.updateDocument(
+      env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+      env.NEXT_PUBLIC_APPWRITE_WORKSPACES_ID,
+      workspaceId,
+      {
+        inviteCode,
+      },
+    );
+
+    if (!updatedWorkspace) {
+      c.status(StatusCodes.NOT_FOUND);
+      return errorResponse(c, "workspace not found");
+    }
+
+    return successResponse(c, { data: { $id: workspaceId } });
+  });
 export default app;

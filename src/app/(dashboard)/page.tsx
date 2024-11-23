@@ -1,6 +1,6 @@
 import { auth } from "@/features/api/server/get_current_user";
 import { redirect } from "next/navigation";
-import { getUserWorkspace } from "@/features/workspaces/actions";
+import { getUserWorkspace } from "@/features/workspaces/queries";
 
 export default async function Home() {
   const user = await auth();
