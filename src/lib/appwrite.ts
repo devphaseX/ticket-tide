@@ -1,6 +1,6 @@
 import "server-only";
 
-import { Client, Account, Databases } from "node-appwrite";
+import { Client, Account, Databases, Users } from "node-appwrite";
 import { env } from "./env";
 import { cookies } from "next/headers";
 import { AUTH_COOKIE } from "@/features/auth/auth.constants";
@@ -15,6 +15,10 @@ export const createAdminClient = () => {
   return {
     get account() {
       return new Account(client);
+    },
+
+    get users() {
+      return new Users(client);
     },
   };
 };
