@@ -17,16 +17,12 @@ export const useDeleteWorkpaceMember = () => {
   return useMutation<ResponseType, Error, RequestType>({
     mutationFn: async (data) => {
       const resp = await client.api.members[":memberId"].$delete(data);
+      const payload = await resp.json();
       if (!resp.ok) {
-        if (resp.headers.get("content-type") === "application/json") {
-          const payload = await resp.json();
-          throw new ClientApiError(payload.message);
-        }
-
-        throw new ClientApiError("failed to delete member");
+        throw new ClientApiError(payload.message ?? "failed to delete member");
       }
 
-      return resp.json();
+      return payload;
     },
 
     onSuccess: async (data) => {

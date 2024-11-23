@@ -7,7 +7,7 @@ import { z } from "zod";
 import StatusCodes from "http-status";
 import { errorResponse, successResponse } from "@/lib/api_response";
 import { env } from "@/lib/env";
-import { Query } from "node-appwrite";
+import { AppwriteException, Query } from "node-appwrite";
 import { Member, Workspace } from "@/lib/types";
 import { MemberRole } from "../member.types";
 
@@ -38,7 +38,7 @@ const app = new Hono()
         return errorResponse(c, "Unauthorized");
       }
 
-      const members = await db.listDocuments(
+      const members = await db.listDocuments<Member>(
         env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         env.NEXT_PUBLIC_APPWRITE_MEMBERS_ID,
         [Query.equal("workspaceId", workspaceId)],
