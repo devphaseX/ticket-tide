@@ -10,6 +10,8 @@ import StatusCodes from "http-status";
 import { MemberRole } from "@/features/members/member.types";
 import { generateInviteCode } from "@/lib/generate_invite_code";
 import { getMember } from "./utils";
+import { z } from "zod";
+import { Member, Workspace } from "@/lib/types";
 
 const app = new Hono()
   .get("/", sessionMiddleware, async (c) => {
@@ -242,5 +244,53 @@ const app = new Hono()
     }
 
     return successResponse(c, { data: { $id: workspaceId } });
-  });
+  })
+  .post(
+    "/:workspaceId/join",
+    sessionMiddleware,
+    zValidator("json", z.object({ code: z.string().min(1) })),
+    async (c) => {
+      const { workspaceId } = c.req.param();
+      const { code } = c.req.valid("json");
+
+      const user = c.get("user");
+      const db = c.get("databases");
+
+      const member = await getMember({
+        workspaceId,
+        databases: db,
+        userId: user.$id,
+      });
+
+      if (member) {
+        c.status(StatusCodes.FORBIDDEN);
+        return errorResponse(c, "user already a member of this workspace");
+      }
+
+      const workspace = await db.getDocument<Workspace>(
+        env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+        env.NEXT_PUBLIC_APPWRITE_WORKSPACES_ID,
+        workspaceId,
+      );
+
+      if (workspace.inviteCode !== code) {
+        c.status(StatusCodes.FORBIDDEN);
+        return errorResponse(c, "Invalid invite code provided.");
+      }
+
+      await db.createDocument<Member>(
+        env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+        env.NEXT_PUBLIC_APPWRITE_MEMBERS_ID,
+        ID.unique(),
+        {
+          userId: user.$id,
+          workspaceId,
+          role: MemberRole.MEMBER,
+        },
+      );
+
+      c.status(StatusCodes.CREATED);
+      return successResponse(c, { data: workspace });
+    },
+  );
 export default app;
