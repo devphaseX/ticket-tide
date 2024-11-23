@@ -50,6 +50,12 @@ export const EditWorkspaceForm = ({
     variant: "destructive",
   });
 
+  const [ResetInviteCodeDialog, confirmResetInvitCode] = useConfirm({
+    title: "Reset invite link",
+    message: "This will invalidate the current invite link",
+    variant: "destructive",
+  });
+
   const inputRef = useRef<HTMLInputElement | null>(null);
   const form = useForm<EditWorkspaceFormData>({
     resolver: zodResolver(editWorkspaceSchema),
@@ -120,6 +126,11 @@ export const EditWorkspaceForm = ({
   };
 
   const handleResetInviteCode = async () => {
+    const shouldResetInviteCode = await confirmResetInvitCode();
+    if (!shouldResetInviteCode) {
+      return;
+    }
+
     resetInviteCode(
       { param: { workspaceId: initialValue.$id } },
       {
@@ -133,6 +144,7 @@ export const EditWorkspaceForm = ({
   return (
     <>
       <DeleteDialog />
+      <ResetInviteCodeDialog />
       <div className="flex flex-col gap-y-4">
         <Card className="w-full h-full border-none shadow-none">
           <CardHeader className="flex flex-row items-center gap-x-4 p-7 space-y-0">
@@ -300,7 +312,7 @@ export const EditWorkspaceForm = ({
                 size="sm"
                 variant="destructive"
                 type="button"
-                disabled={isResetingInviteCode}
+                disabled={isResetingInviteCode || isDeletingWorkspace}
                 onClick={handleResetInviteCode}
               >
                 Reset invite link

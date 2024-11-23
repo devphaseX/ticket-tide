@@ -40,7 +40,7 @@ export const useResetInviteCode = () => {
         return;
       }
 
-      toast.success("workspace invite code resetted");
+      toast.success("invite code resetted succesfully");
       await Promise.allSettled([
         queryClient.invalidateQueries({ queryKey: ["workspaces"] }),
         queryClient.invalidateQueries({
