@@ -13,3 +13,9 @@ export type Member = Models.Document & {
   workspaceId: string;
   role: MemberRole;
 };
+
+export type Project = Models.Document & {
+  name: string;
+  imageUrl: string;
+  workspaceId: string;
+};
