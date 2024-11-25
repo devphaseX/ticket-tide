@@ -1,6 +1,8 @@
 "use client";
 
-import { Loader } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, Loader } from "lucide-react";
+import Link from "next/link";
 
 const LoadingPage = (error: unknown) => {
   return (

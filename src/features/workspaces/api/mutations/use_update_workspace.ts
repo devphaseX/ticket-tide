@@ -15,27 +15,25 @@ type RequestType = InferRequestType<
 
 export const useUpdateWorkspace = () => {
   const queryClient = useQueryClient();
-
+  const router = useRouter();
   return useMutation<ResponseType, Error, RequestType>({
     mutationFn: async (data) => {
       const resp = await client.api.workspaces[":workspaceId"].$patch(data);
-
-      if (!resp.ok) {
-        if (resp.headers.get("content-type") === "application/json") {
-          const payload = await resp.json();
-          throw new ClientApiError(payload.message);
-        }
-
-        throw new ClientApiError("failed to update workspace");
+      const payload = await resp.json();
+      if (!payload.success) {
+        throw new ClientApiError(
+          payload.message ?? "failed to update workspace",
+        );
       }
 
-      return resp.json();
+      return payload;
     },
 
     onSuccess: async (data) => {
       if (!data.success) {
         return;
       }
+      router.refresh();
       await Promise.allSettled([
         queryClient.invalidateQueries({ queryKey: ["workspaces"] }),
         queryClient.invalidateQueries({

@@ -1,33 +1,31 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CreateWorkspaceFormData } from "../../schema";
 import { client } from "@/lib/rpc";
 import { InferResponseType, InferRequestType } from "hono";
-import { useRouter } from "next/navigation";
 import { ClientApiError } from "@/lib/errors";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 type ResponseType = InferResponseType<
-  (typeof client.api.workspaces)[":workspaceId"]["$delete"]
+  (typeof client.api.projects)[":projectId"]["$patch"]
 >;
 type RequestType = InferRequestType<
-  (typeof client.api.workspaces)[":workspaceId"]["$delete"]
+  (typeof client.api.projects)[":projectId"]["$patch"]
 >;
 
-export const useDeleteWorkspace = () => {
+export const useUpdateProject = () => {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   return useMutation<ResponseType, Error, RequestType>({
     mutationFn: async (data) => {
-      const resp = await client.api.workspaces[":workspaceId"].$delete(data);
+      const resp = await client.api.projects[":projectId"].$patch(data);
 
       const payload = await resp.json();
-      if (!payload.success) {
-        throw new ClientApiError(
-          payload.message ?? "failed to delete workspace",
-        );
-      }
 
-      return resp.json();
+      if (!payload.success) {
+        throw new ClientApiError(payload.message ?? "failed to update project");
+      }
+      return payload;
     },
 
     onSuccess: async (data) => {
@@ -35,20 +33,25 @@ export const useDeleteWorkspace = () => {
         return;
       }
 
-      toast.success("workpace deleted succesfully");
+      toast.success("updated project");
+      router.refresh();
       await Promise.allSettled([
-        queryClient.invalidateQueries({ queryKey: ["workspaces"] }),
-        queryClient.removeQueries({ queryKey: ["workspaces", data.data.$id] }),
+        queryClient.invalidateQueries({
+          queryKey: ["workspace_projects", data.data.workspaceId],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["projects", data.data.$id],
+        }),
       ]);
     },
 
     onError: (error) => {
+      console.log(`[UPDATE PROJECT ERROR]`, error);
       if (error instanceof ClientApiError) {
         return toast.error(error.message);
       }
 
-      console.log(`[DELETE WORKSPACE ERROR]`, error);
-      toast.error("failed to delete workspace");
+      toast.error("failed to update project");
     },
   });
 };

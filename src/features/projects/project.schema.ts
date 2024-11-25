@@ -13,3 +13,15 @@ export const createProjectSchema = z.object({
 });
 
 export type CreateProjectFormData = TypeOf<typeof createProjectSchema>;
+
+export const editProjectSchema = z.object({
+  name: z.string().trim().min(1, "minimum 1 character required").optional(),
+  image: z
+    .union([
+      z.instanceof(File),
+      z.string().transform((value) => (value === "" ? undefined : value)),
+    ])
+    .optional(),
+});
+
+export type EditProjectSchema = TypeOf<typeof editProjectSchema>;

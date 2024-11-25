@@ -1,33 +1,32 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CreateWorkspaceFormData } from "../../schema";
 import { client } from "@/lib/rpc";
 import { InferResponseType, InferRequestType } from "hono";
 import { useRouter } from "next/navigation";
 import { ClientApiError } from "@/lib/errors";
 import { toast } from "sonner";
+import { useWorkspaceId } from "@/features/workspaces/hooks/use_workspace_id";
 
 type ResponseType = InferResponseType<
-  (typeof client.api.workspaces)[":workspaceId"]["$delete"]
+  (typeof client.api.projects)[":projectId"]["$delete"]
 >;
 type RequestType = InferRequestType<
-  (typeof client.api.workspaces)[":workspaceId"]["$delete"]
+  (typeof client.api.projects)[":projectId"]["$delete"]
 >;
 
-export const useDeleteWorkspace = () => {
+export const useDeleteProject = () => {
   const queryClient = useQueryClient();
 
   return useMutation<ResponseType, Error, RequestType>({
     mutationFn: async (data) => {
-      const resp = await client.api.workspaces[":workspaceId"].$delete(data);
+      const resp = await client.api.projects[":projectId"].$delete(data);
 
       const payload = await resp.json();
+
       if (!payload.success) {
-        throw new ClientApiError(
-          payload.message ?? "failed to delete workspace",
-        );
+        throw new ClientApiError(payload.message ?? "failed to delete project");
       }
 
-      return resp.json();
+      return payload;
     },
 
     onSuccess: async (data) => {
@@ -35,10 +34,14 @@ export const useDeleteWorkspace = () => {
         return;
       }
 
-      toast.success("workpace deleted succesfully");
+      toast.success("project deleted succesfully");
       await Promise.allSettled([
-        queryClient.invalidateQueries({ queryKey: ["workspaces"] }),
-        queryClient.removeQueries({ queryKey: ["workspaces", data.data.$id] }),
+        queryClient.invalidateQueries({
+          queryKey: ["workspace_projects", data.data.workspaceId],
+        }),
+        queryClient.removeQueries({
+          queryKey: ["projects", data.data.$id],
+        }),
       ]);
     },
 
@@ -47,7 +50,7 @@ export const useDeleteWorkspace = () => {
         return toast.error(error.message);
       }
 
-      console.log(`[DELETE WORKSPACE ERROR]`, error);
+      console.log(`[DELETE PROJECT ERROR]`, error);
       toast.error("failed to delete workspace");
     },
   });

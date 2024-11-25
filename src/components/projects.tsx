@@ -30,7 +30,7 @@ export const Projects = () => {
       </div>
 
       {data?.documents.map((project) => {
-        const href = `/workspaces/${workspaceId}/projects/${projectId}`;
+        const href = `/workspaces/${workspaceId}/projects/${project.$id}`;
         const isActive = projectId === project.$id;
         return (
           <Link

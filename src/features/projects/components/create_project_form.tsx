@@ -53,8 +53,8 @@ export const CreateProjectForm = ({ onCancel }: CreateProjectFormProps) => {
             return toast.error(resp?.message ?? String(err));
           }
 
-          //redirect to the new workspace
-          // router.push(`/workspaces/${workspaceId}/projects/${resp.data.$id}`);
+          //redirect to the new project
+          router.push(`/workspaces/${workspaceId}/projects/${resp.data.$id}`);
           toast.success("project created sucessfully");
           form.reset();
         },
