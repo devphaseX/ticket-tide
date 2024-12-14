@@ -19,3 +19,22 @@ export type Project = Models.Document & {
   imageUrl: string;
   workspaceId: string;
 };
+
+export enum TaskStatus {
+  BACKLOG = "BACKLOG",
+  TODO = "TODO",
+  IN_PROGRESS = "IN_PROGRESS",
+  IN_REVIEW = "IN_REVIEW",
+  DONE = "DONE",
+}
+
+export type Task = Models.Document & {
+  name: string;
+  projectId: string;
+  workspaceId: string;
+  description?: string;
+  dueDate: Date;
+  status: TaskStatus;
+  position: number;
+  assigneeId: string;
+};

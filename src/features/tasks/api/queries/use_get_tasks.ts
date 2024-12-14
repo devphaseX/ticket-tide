@@ -1,22 +1,23 @@
 import { ClientApiError } from "@/lib/errors";
 import { client } from "@/lib/rpc";
 import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
 
-interface UseGetMembersProps {
+interface UseGetTasksProps {
   workspaceId: string;
+  projectId: string;
 }
 
-export const useGetWorkspaceMembers = ({ workspaceId }: UseGetMembersProps) => {
+export const useGetTasks = ({ workspaceId, projectId }: UseGetTasksProps) => {
   return useQuery({
-    queryKey: ["members", workspaceId],
+    queryKey: ["project_tasks", projectId],
     queryFn: async () => {
-      const resp = await client.api.members.$get({ query: { workspaceId } });
+      const resp = await client.api.tasks.$get({
+        query: { workspaceId, projectId },
+      });
       const payload = await resp.json();
-
       if (!payload.success) {
         throw new ClientApiError(
-          payload.message ?? "failed to fetch workspace members",
+          payload.message ?? "failed to fetch project tasks",
         );
       }
       return payload.data;
