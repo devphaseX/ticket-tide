@@ -49,7 +49,7 @@ export const CreateTaskForm = ({
   const workspaceId = useWorkspaceId();
   const form = useForm<CreateTaskFormData>({
     resolver: zodResolver(createTaskSchema),
-    defaultValues: { name: "", description: "", workspaceId },
+    defaultValues: { name: "", workspaceId },
     disabled: isPending,
   });
 
@@ -65,11 +65,14 @@ export const CreateTaskForm = ({
 
           //redirect to the new project
           toast.success("task created sucessfully");
+          onCancel?.();
           form.reset();
         },
       },
     );
   };
+
+  console.log({ errors: form.formState.errors });
 
   return (
     <Card

@@ -159,7 +159,7 @@ const app = new Hono()
         env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
         env.NEXT_PUBLIC_APPWRITE_TASKS_ID,
         [
-          Query.equal("workspacedId", workspaceId),
+          Query.equal("workspaceId", workspaceId),
           Query.equal("status", status),
           Query.orderAsc("position"),
           Query.limit(1),

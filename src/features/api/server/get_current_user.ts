@@ -14,14 +14,12 @@ export const auth = cache(async () => {
 
     const cookie = await cookies();
     const session = cookie.get(AUTH_COOKIE)?.value;
-    console.log({ session });
     if (!session) {
       return null;
     }
     client.setSession(session);
     const account = new Account(client);
     const user = await account.get();
-    console.log({ user });
 
     return user;
   } catch (e) {
