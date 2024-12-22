@@ -198,6 +198,60 @@ const app = new Hono()
       return successResponse(c, { data: task });
     },
   )
+  .patch(
+    "/:taskId",
+    sessionMiddleware,
+    zValidator("json", createTaskSchema.partial()),
+    async (c) => {
+      const user = c.get("user");
+      const db = c.get("databases");
+      const {
+        name,
+        status,
+        workspaceId,
+        projectId,
+        dueDate,
+        assigneeId,
+        description,
+      } = c.req.valid("json");
+
+      const { taskId } = c.req.param();
+
+      const existingTask = await db.getDocument<Task>(
+        env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+        env.NEXT_PUBLIC_APPWRITE_TASKS_ID,
+        taskId,
+      );
+
+      const member = await getMember({
+        databases: db,
+        userId: user.$id,
+        workspaceId: existingTask.workspaceId,
+      });
+
+      if (!(member && member.role === MemberRole.ADMIN)) {
+        c.status(StatusCodes.FORBIDDEN);
+        return errorResponse(c, "unauthorized");
+      }
+
+      const updatedTask = await db.updateDocument<Task>(
+        env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+        env.NEXT_PUBLIC_APPWRITE_TASKS_ID,
+        taskId,
+        {
+          name,
+          status,
+          projectId,
+          dueDate,
+          assigneeId,
+          description,
+        },
+      );
+
+      c.status(StatusCodes.OK);
+      return successResponse(c, { data: { task: updatedTask } });
+    },
+  )
   .delete("/:taskId", sessionMiddleware, async (c) => {
     const user = c.get("user");
     const db = c.get("databases");
