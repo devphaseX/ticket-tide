@@ -38,3 +38,8 @@ export type Task = Models.Document & {
   position: number;
   assigneeId: string;
 };
+
+export type TaskWithProjectAssignee = Task & {
+  project: Project;
+  assignee: Member & { name: string; email: string };
+};

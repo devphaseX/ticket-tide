@@ -11,6 +11,9 @@ import { useProjectId } from "@/features/projects/hooks/use_project_id";
 import { useQueryState, parseAsStringEnum } from "nuqs";
 import { DataFilters } from "./data_filter";
 import { useTaskFilters } from "../hooks/use_task_filters";
+import { DataTable } from "./data_table";
+import { columns } from "./columns";
+import { Task, TaskWithProjectAssignee } from "@/lib/types";
 
 export const TaskViewSwitcher = () => {
   const [view, setView] = useQueryState(
@@ -65,7 +68,13 @@ export const TaskViewSwitcher = () => {
         ) : (
           <>
             <TabsContent value="table" className="mt-0">
-              Data table
+              <DataTable
+                columns={columns}
+                data={
+                  (data?.documents as unknown as TaskWithProjectAssignee[]) ??
+                  []
+                }
+              />
             </TabsContent>
             <TabsContent value="kanban" className="mt-0">
               Data Kanban

@@ -8,7 +8,13 @@ import StatusCodes from "http-status";
 import { errorResponse, successResponse } from "@/lib/api_response";
 import { env } from "@/lib/env";
 import { ID, Query, Users } from "node-appwrite";
-import { Member, Project, Task, TaskStatus } from "@/lib/types";
+import {
+  Member,
+  Project,
+  Task,
+  TaskStatus,
+  TaskWithProjectAssignee,
+} from "@/lib/types";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/appwrite";
 
@@ -118,16 +124,18 @@ const app = new Hono()
             ),
         );
 
-      const populatedTask = tasks.documents.map((task) => {
-        const project = projects.get(task.projectId)!;
-        const assignee = members.get(task.assigneeId)!;
+      const populatedTask = tasks.documents.map<TaskWithProjectAssignee>(
+        (task) => {
+          const project = projects.get(task.projectId)!;
+          const assignee = members.get(task.assigneeId)!;
 
-        return {
-          ...task,
-          project,
-          assignee,
-        };
-      });
+          return {
+            ...task,
+            project,
+            assignee,
+          };
+        },
+      );
 
       return successResponse(c, {
         data: { ...tasks, documents: populatedTask },
