@@ -197,5 +197,40 @@ const app = new Hono()
       c.status(StatusCodes.CREATED);
       return successResponse(c, { data: task });
     },
-  );
+  )
+  .delete("/:taskId", sessionMiddleware, async (c) => {
+    const user = c.get("user");
+    const db = c.get("databases");
+
+    const { taskId } = c.req.param();
+    const task = await db.getDocument<Task>(
+      env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+      env.NEXT_PUBLIC_APPWRITE_TASKS_ID,
+      taskId,
+    );
+
+    const member = await getMember({
+      databases: db,
+      userId: user.$id,
+      workspaceId: task.workspaceId,
+    });
+
+    if (!(member && member.role === MemberRole.ADMIN)) {
+      c.status(StatusCodes.FORBIDDEN);
+      return errorResponse(c, "you are not allowed to perform this action");
+    }
+
+    await db.deleteDocument(
+      env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+      env.NEXT_PUBLIC_APPWRITE_TASKS_ID,
+      taskId,
+    );
+
+    return successResponse(
+      c,
+      { data: { $id: task.$id, projectId: task.projectId } },
+      StatusCodes.OK,
+      "task deleted successfully",
+    );
+  });
 export default app;
