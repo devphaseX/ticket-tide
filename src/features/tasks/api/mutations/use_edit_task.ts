@@ -17,7 +17,6 @@ export const useEditTask = () => {
 
   return useMutation<ResponseType, Error, RequestType>({
     mutationFn: async (data) => {
-      console.log({ data });
       const resp = await client.api.tasks[":taskId"].$patch(data);
       const payload = await resp.json();
       if (!payload.success) {

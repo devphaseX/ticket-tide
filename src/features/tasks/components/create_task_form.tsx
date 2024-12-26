@@ -38,18 +38,20 @@ interface CreateTaskFormProps {
   onCancel?: () => void;
   projectOptions: ProjectOption[];
   memberOptions: MemberOption[];
+  initialStatus?: TaskStatus;
 }
 
 export const CreateTaskForm = ({
   onCancel,
   memberOptions,
   projectOptions,
+  initialStatus,
 }: CreateTaskFormProps) => {
   const { mutate: createTask, isPending } = useCreateTask();
   const workspaceId = useWorkspaceId();
   const form = useForm<CreateTaskFormData>({
     resolver: zodResolver(createTaskSchema),
-    defaultValues: { name: "", workspaceId },
+    defaultValues: { name: "", workspaceId, status: initialStatus },
     disabled: isPending,
   });
 
