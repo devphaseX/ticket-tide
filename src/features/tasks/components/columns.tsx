@@ -94,7 +94,7 @@ export const columns: ColumnDef<TaskWithProjectAssignee>[] = [
     ),
     cell: ({ row }) => {
       const dueDate = row.original.dueDate;
-      return <TaskDate value={dueDate} />;
+      return <TaskDate value={new Date(dueDate)} />;
     },
   },
   {

@@ -1,13 +1,13 @@
 import { sessionMiddleware } from "@/lib/session_middleware";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import { createTaskSchema } from "../schemas";
+import { createTaskSchema, editTaskSchema } from "../schemas";
 import { getMember } from "@/features/workspaces/server/utils";
 import { MemberRole } from "@/features/members/member.types";
 import StatusCodes from "http-status";
 import { errorResponse, successResponse } from "@/lib/api_response";
 import { env } from "@/lib/env";
-import { ID, Query, Users } from "node-appwrite";
+import { AppwriteException, ID, Query, Users } from "node-appwrite";
 import {
   Member,
   Project,
@@ -17,6 +17,7 @@ import {
 } from "@/lib/types";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/appwrite";
+import { auth } from "@/features/api/server/get_current_user";
 
 const app = new Hono()
   .get(
@@ -198,22 +199,67 @@ const app = new Hono()
       return successResponse(c, { data: task });
     },
   )
+  .get("/:taskId", sessionMiddleware, async (c) => {
+    const { taskId } = c.req.param();
+    const currentUser = c.get("user");
+    const { users } = createAdminClient();
+    const db = c.get("databases");
+
+    const task = await db.getDocument<Task>(
+      env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+      env.NEXT_PUBLIC_APPWRITE_TASKS_ID,
+      taskId,
+    );
+
+    const currentMember = await getMember({
+      workspaceId: task.workspaceId,
+      userId: currentUser.$id,
+      databases: db,
+    });
+
+    if (!currentMember) {
+      c.status(StatusCodes.FORBIDDEN);
+      return errorResponse(c, "unauthorized");
+    }
+
+    const project = await db.getDocument<Project>(
+      env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+      env.NEXT_PUBLIC_APPWRITE_PROJECTS_ID,
+      task.projectId,
+    );
+
+    const memberAssigned = await db.getDocument<Member>(
+      env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+      env.NEXT_PUBLIC_APPWRITE_MEMBERS_ID,
+      task.assigneeId,
+    );
+    const assignedUserInfo = await users.get(memberAssigned.userId);
+
+    const assignee = {
+      ...memberAssigned,
+      name: assignedUserInfo.name,
+      email: assignedUserInfo.email,
+    };
+
+    return successResponse(c, {
+      data: {
+        task: {
+          ...task,
+          project,
+          assignee,
+        },
+      },
+    });
+  })
   .patch(
     "/:taskId",
     sessionMiddleware,
-    zValidator("json", createTaskSchema.partial()),
+    zValidator("json", editTaskSchema),
     async (c) => {
       const user = c.get("user");
       const db = c.get("databases");
-      const {
-        name,
-        status,
-        workspaceId,
-        projectId,
-        dueDate,
-        assigneeId,
-        description,
-      } = c.req.valid("json");
+      const { name, status, projectId, dueDate, assigneeId } =
+        c.req.valid("json");
 
       const { taskId } = c.req.param();
 
@@ -244,7 +290,6 @@ const app = new Hono()
           projectId,
           dueDate,
           assigneeId,
-          description,
         },
       );
 

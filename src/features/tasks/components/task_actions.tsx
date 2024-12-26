@@ -10,6 +10,8 @@ import { useDeleteTask } from "../api/mutations/use_delete_task";
 import { useConfirm } from "@/hooks/use_confirm";
 import { useRouter } from "next/navigation";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use_workspace_id";
+import { useEditTaskModal } from "../hooks/use_edit_task_modal";
+import { EditTaskModal } from "./edit_task_modal";
 
 interface TaskActionsProps {
   id: string;
@@ -20,6 +22,7 @@ interface TaskActionsProps {
 export const TaskActions = ({ id, projectId, children }: TaskActionsProps) => {
   const router = useRouter();
   const workspaceId = useWorkspaceId();
+  const { taskId, setOpen } = useEditTaskModal();
   const { mutate: deleteTask, isPending: isTaskDeleting } = useDeleteTask();
   const [ConfirmDialog, confirm] = useConfirm({
     title: "Delete task",
@@ -43,6 +46,7 @@ export const TaskActions = ({ id, projectId, children }: TaskActionsProps) => {
   return (
     <>
       <ConfirmDialog />
+      <EditTaskModal />
       <div className="flex justify-end">
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
@@ -65,8 +69,8 @@ export const TaskActions = ({ id, projectId, children }: TaskActionsProps) => {
               Open Project
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => {}}
-              disabled={false}
+              onClick={() => setOpen(id)}
+              disabled={!!taskId}
               className="font-medium p-[10px]"
             >
               <PencilIcon className="size-4 mr-2 stroke-2" />
