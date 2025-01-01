@@ -21,3 +21,15 @@ export const editTaskSchema = createTaskSchema
   .partial();
 
 export type EditTaskFormData = TypeOf<typeof editTaskSchema>;
+
+export const bulkUpdateTaskSchema = z.object({
+  tasks: z.array(
+    z.object({
+      $id: z.string().min(1),
+      status: z.nativeEnum(TaskStatus),
+      position: z.coerce.number().int().positive().min(1000).max(1_000_000),
+    }),
+  ),
+});
+
+export type BulkUpdateTaskFormData = TypeOf<typeof bulkUpdateTaskSchema>;

@@ -38,10 +38,18 @@ export const useDeleteTask = () => {
       router.refresh();
       await Promise.allSettled([
         queryClient.invalidateQueries({
-          queryKey: ["project_tasks", data.data.projectId],
+          queryKey: [
+            "project_tasks",
+            data.data.workspaceId,
+            data.data.projectId,
+          ],
         }),
+
         queryClient.invalidateQueries({
-          queryKey: ["project_tasks", data.data.projectId, data.data.$id],
+          queryKey: ["project_tasks", data.data.workspaceId],
+        }),
+        queryClient.removeQueries({
+          queryKey: ["tasks", data.data.$id],
         }),
       ]);
     },

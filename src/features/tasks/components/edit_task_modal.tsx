@@ -7,7 +7,6 @@ import { EditTaskFormWrapper } from "./edit_task_form_wrapper";
 
 export const EditTaskModal = () => {
   const { taskId, setClose } = useEditTaskModal();
-  console.log({ taskId });
   return (
     <ResponsiveModal open={typeof taskId === "string"} onOpenChange={setClose}>
       {taskId && <EditTaskFormWrapper id={taskId} onCancel={setClose} />}

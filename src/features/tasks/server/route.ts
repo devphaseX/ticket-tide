@@ -1,7 +1,11 @@
 import { sessionMiddleware } from "@/lib/session_middleware";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import { createTaskSchema, editTaskSchema } from "../schemas";
+import {
+  bulkUpdateTaskSchema,
+  createTaskSchema,
+  editTaskSchema,
+} from "../schemas";
 import { getMember } from "@/features/workspaces/server/utils";
 import { MemberRole } from "@/features/members/member.types";
 import StatusCodes from "http-status";
@@ -170,7 +174,7 @@ const app = new Hono()
         [
           Query.equal("workspaceId", workspaceId),
           Query.equal("status", status),
-          Query.orderAsc("position"),
+          Query.orderDesc("position"),
           Query.limit(1),
         ],
       );
@@ -327,9 +331,73 @@ const app = new Hono()
 
     return successResponse(
       c,
-      { data: { $id: task.$id, projectId: task.projectId } },
+      {
+        data: {
+          $id: task.$id,
+          projectId: task.projectId,
+          workspaceId: task.workspaceId,
+        },
+      },
       StatusCodes.OK,
       "task deleted successfully",
     );
-  });
+  })
+  .post(
+    "/bulk-update",
+    sessionMiddleware,
+
+    zValidator("json", bulkUpdateTaskSchema),
+    async (c) => {
+      const db = c.get("databases");
+      const { tasks } = c.req.valid("json");
+
+      const tasksToUpdate = await db.listDocuments<Task>(
+        env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+        env.NEXT_PUBLIC_APPWRITE_TASKS_ID,
+        [
+          Query.contains(
+            "$id",
+            tasks.map((task) => task.$id),
+          ),
+        ],
+      );
+
+      const workspaceIds = new Set(
+        tasksToUpdate.documents.map((task) => task.workspaceId),
+      );
+
+      if (workspaceIds.size !== 1) {
+        c.status(StatusCodes.BAD_REQUEST);
+        return errorResponse(c, "all tasks must belong to the same workspace");
+      }
+
+      const [workspaceId] = workspaceIds;
+      const member = await getMember({
+        databases: db,
+        userId: c.get("user").$id,
+        workspaceId,
+      });
+
+      if (!member) {
+        c.status(StatusCodes.FORBIDDEN);
+        return errorResponse(c, "unauthorized");
+      }
+
+      const updatedTasks = await Promise.all(
+        tasks.map(async (task) => {
+          return db.updateDocument<Task>(
+            env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
+            env.NEXT_PUBLIC_APPWRITE_TASKS_ID,
+            task.$id,
+            {
+              status: task.status,
+              position: task.position,
+            },
+          );
+        }),
+      );
+
+      return successResponse(c, { data: { tasks: updatedTasks } });
+    },
+  );
 export default app;

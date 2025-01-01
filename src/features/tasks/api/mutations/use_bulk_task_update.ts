@@ -6,21 +6,24 @@ import { toast } from "sonner";
 import { DatabaseIcon } from "lucide-react";
 
 type ResponseType = InferResponseType<
-  (typeof client.api.tasks)[":taskId"]["$patch"]
+  (typeof client.api.tasks)["bulk-update"]["$post"]
 >;
 type RequestType = InferRequestType<
-  (typeof client.api.tasks)[":taskId"]["$patch"]
+  (typeof client.api.tasks)["bulk-update"]["$post"]
 >;
 
-export const useEditTask = () => {
+export const useBulkTasksUpdate = () => {
   const queryClient = useQueryClient();
 
   return useMutation<ResponseType, Error, RequestType>({
     mutationFn: async (data) => {
-      const resp = await client.api.tasks[":taskId"].$patch(data);
+      const resp = await client.api.tasks["bulk-update"].$post(data);
+
       const payload = await resp.json();
       if (!payload.success) {
-        throw new ClientApiError(payload.message ?? "failed to update task");
+        throw new ClientApiError(
+          payload.message ?? "failed to perform bulk task update",
+        );
       }
 
       return payload;
@@ -31,21 +34,22 @@ export const useEditTask = () => {
         return;
       }
 
-      toast.success("task update successfully");
+      toast.success("tasks updated successfully");
+      const { tasks } = data.data;
+      const [{ workspaceId }] = tasks;
+
       await Promise.allSettled([
         queryClient.invalidateQueries({
-          queryKey: ["project_tasks", data.data.task.workspaceId],
+          queryKey: ["project_tasks", workspaceId],
         }),
-        queryClient.invalidateQueries({
-          queryKey: [
-            "project_tasks",
-            data.data.task.workspaceId,
-            data.data.task.projectId,
-          ],
-        }),
-        queryClient.invalidateQueries({
-          queryKey: ["task", data.data.task.$id],
-        }),
+        ...tasks.flatMap((task) => [
+          queryClient.invalidateQueries({
+            queryKey: ["project_tasks", workspaceId, task.projectId],
+          }),
+          queryClient.invalidateQueries({
+            queryKey: ["task", task.$id],
+          }),
+        ]),
       ]);
     },
     onError: (error) => {
@@ -53,8 +57,8 @@ export const useEditTask = () => {
         return toast.error(error.message);
       }
 
-      console.log(`[UPDATE TASK ERROR]`, error);
-      toast.error("failed to update task");
+      console.log(`[BULK TASK UPDATE ERROR]`, error);
+      toast.error("failed to perform bulk task update");
     },
   });
 };

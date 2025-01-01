@@ -1,4 +1,5 @@
 import { MemberRole } from "@/features/members/member.types";
+import { BulkUpdateTaskFormData } from "@/features/tasks/schemas";
 import { Models } from "node-appwrite";
 
 export type Workspace = Models.Document & {
@@ -43,3 +44,5 @@ export type TaskWithProjectAssignee = Task & {
   project: Project;
   assignee: Member & { name: string; email: string };
 };
+
+export type UpdateTaskLocationPayload = BulkUpdateTaskFormData["tasks"][0];

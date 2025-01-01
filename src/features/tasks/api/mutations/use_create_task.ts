@@ -31,7 +31,14 @@ export const useCreateTask = () => {
       toast.success("task created successfully");
       await Promise.allSettled([
         queryClient.invalidateQueries({
-          queryKey: ["project_tasks", data.data.projectId],
+          queryKey: ["project_tasks", data.data.workspaceId],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: [
+            "project_tasks",
+            data.data.workspaceId,
+            data.data.projectId,
+          ],
         }),
       ]);
     },

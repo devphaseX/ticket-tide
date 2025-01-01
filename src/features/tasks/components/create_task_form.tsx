@@ -55,6 +55,8 @@ export const CreateTaskForm = ({
     disabled: isPending,
   });
 
+  // console.log({ createFormStatus: initialStatus });
+
   const router = useRouter();
   const onSubmit = (data: CreateTaskFormData) => {
     createTask(
@@ -73,8 +75,6 @@ export const CreateTaskForm = ({
       },
     );
   };
-
-  console.log({ errors: form.formState.errors });
 
   return (
     <Card

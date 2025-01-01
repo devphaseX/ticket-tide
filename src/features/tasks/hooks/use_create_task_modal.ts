@@ -1,6 +1,8 @@
 "use client";
 import { TaskStatus } from "@/lib/types";
 import { useQueryState, parseAsBoolean, parseAsStringEnum } from "nuqs";
+import { useState } from "react";
+import { useSelectCreateTask } from "./use_select_create_task";
 
 export const useCreateTaskModal = () => {
   const [taskModalOpen, setTaskModalOpen] = useQueryState(
@@ -8,25 +10,20 @@ export const useCreateTaskModal = () => {
     parseAsBoolean.withDefault(false),
   );
 
-  const [initialStatus, setInitialStatus] = useQueryState(
-    "status",
-    parseAsStringEnum(Object.values(TaskStatus)),
-  );
-
+  const { selected, setSelected } = useSelectCreateTask();
   const setOpen = (initialStatus?: TaskStatus) => {
+    setSelected(initialStatus ?? null);
     setTaskModalOpen(true);
-    if (initialStatus) {
-      setInitialStatus(initialStatus);
-    }
   };
+
   const setClose = () => {
     setTaskModalOpen(false);
-    setInitialStatus(null);
+    setSelected(null);
   };
 
   return {
     open: taskModalOpen,
-    initialStatus,
+    initialStatus: selected,
     setTaskModalOpen,
     setOpen,
     setClose,

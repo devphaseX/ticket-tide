@@ -20,6 +20,15 @@ export const useGetTasks = ({
   assigneeId,
   dueDate,
 }: UseGetTasksProps) => {
+  console.log([
+    "project_tasks",
+    workspaceId,
+    projectId,
+    status,
+    search,
+    assigneeId,
+    dueDate,
+  ]);
   return useQuery({
     queryKey: [
       "project_tasks",
