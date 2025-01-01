@@ -21,6 +21,7 @@ import {
 import { DataKanban } from "./data_kanban";
 import { useCallback } from "react";
 import { useBulkTasksUpdate } from "../api/mutations/use_bulk_task_update";
+import { DataCalendar } from "./data_calendar";
 
 export const TaskViewSwitcher = () => {
   const [view, setView] = useQueryState(
@@ -101,8 +102,8 @@ export const TaskViewSwitcher = () => {
                 disabled={isBulkTasksUpdating}
               />
             </TabsContent>
-            <TabsContent value="calendar" className="mt-0">
-              Data Calendar
+            <TabsContent value="calendar" className="mt-0 h-full pb-4">
+              <DataCalendar data={data?.documents ?? []} />
             </TabsContent>
           </>
         )}

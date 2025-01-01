@@ -46,3 +46,13 @@ export type TaskWithProjectAssignee = Task & {
 };
 
 export type UpdateTaskLocationPayload = BulkUpdateTaskFormData["tasks"][0];
+
+export type TaskEvent = {
+  id: string;
+  title: string;
+  project: Project;
+  start: Date;
+  end: Date;
+  assignee: Member & { name: string; email: string };
+  status: TaskStatus;
+};
