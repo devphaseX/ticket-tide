@@ -42,7 +42,7 @@ export const DataFilters = ({ hideProjectFilter }: DataFilterProps) => {
     name: member.name,
   }));
 
-  const [{ status, assigneeId, projectId, dueDate, search }, setFilters] =
+  const [{ status, assigneeId, projectId, dueDate }, setFilters] =
     useTaskFilters();
 
   const onStatusChange = (value: string) => {
@@ -110,28 +110,30 @@ export const DataFilters = ({ hideProjectFilter }: DataFilterProps) => {
         </SelectContent>
       </Select>
 
-      <Select
-        defaultValue={projectId ?? undefined}
-        onValueChange={onProjectChange}
-      >
-        <SelectTrigger className="w-full lg:w-auto h-8">
-          <div className="flex items-center pr-2">
-            <UserIcon className="size-4 mr-2" />
-            <SelectValue placeholder="All projects" />
-          </div>
-        </SelectTrigger>
+      {!hideProjectFilter && (
+        <Select
+          defaultValue={projectId ?? undefined}
+          onValueChange={onProjectChange}
+        >
+          <SelectTrigger className="w-full lg:w-auto h-8">
+            <div className="flex items-center pr-2">
+              <UserIcon className="size-4 mr-2" />
+              <SelectValue placeholder="All projects" />
+            </div>
+          </SelectTrigger>
 
-        <SelectContent>
-          <SelectItem value="all">All projects</SelectItem>
-          <SelectSeparator />
+          <SelectContent>
+            <SelectItem value="all">All projects</SelectItem>
+            <SelectSeparator />
 
-          {projectOptions?.map((project) => (
-            <SelectItem key={project.$id} value={project.$id}>
-              {project.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+            {projectOptions?.map((project) => (
+              <SelectItem key={project.$id} value={project.$id}>
+                {project.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
       <DatePicker
         placeholder="Due date"

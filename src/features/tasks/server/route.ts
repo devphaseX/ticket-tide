@@ -262,7 +262,7 @@ const app = new Hono()
     async (c) => {
       const user = c.get("user");
       const db = c.get("databases");
-      const { name, status, projectId, dueDate, assigneeId } =
+      const { name, status, projectId, dueDate, assigneeId, description } =
         c.req.valid("json");
 
       const { taskId } = c.req.param();
@@ -294,6 +294,7 @@ const app = new Hono()
           projectId,
           dueDate,
           assigneeId,
+          description,
         },
       );
 

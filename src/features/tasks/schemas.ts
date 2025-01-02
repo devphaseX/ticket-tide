@@ -13,12 +13,9 @@ export const createTaskSchema = z.object({
 
 export type CreateTaskFormData = TypeOf<typeof createTaskSchema>;
 
-export const editTaskSchema = createTaskSchema
-  .omit({
-    workspaceId: true,
-    description: true,
-  })
-  .partial();
+export const editTaskSchema = createTaskSchema.omit({
+  workspaceId: true,
+});
 
 export type EditTaskFormData = TypeOf<typeof editTaskSchema>;
 
