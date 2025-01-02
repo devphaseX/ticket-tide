@@ -13,6 +13,8 @@ import { Calendar, dateFnsLocalizer } from "react-big-calendar";
 import { TaskEvent, TaskWithProjectAssignee } from "@/lib/types";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./data_calendar.css";
+import { EventCard } from "./event_card";
+import { CustomToolbar } from "./custom_toolbar";
 
 const locales = {
   "en-US": enUS,
@@ -73,6 +75,25 @@ export const DataCalendar: React.FC<DataCalendarProps> = ({ data }) => {
       formats={{
         weekdayFormat: (date, culture, localizer) =>
           localizer?.format(date, "EEE", culture) ?? "",
+      }}
+      components={{
+        eventWrapper: ({ event }) => {
+          return (
+            <EventCard
+              id={event.id}
+              title={event.title}
+              assignee={event.assignee}
+              project={event.project}
+              status={event.status}
+            />
+          );
+        },
+
+        toolbar: () => {
+          return (
+            <CustomToolbar date={monthInView} onNavigate={handleNavigate} />
+          );
+        },
       }}
     />
   );
