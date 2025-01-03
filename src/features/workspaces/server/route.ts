@@ -12,6 +12,7 @@ import { generateInviteCode } from "@/lib/generate_invite_code";
 import { getMember } from "./utils";
 import { z } from "zod";
 import { Member, Workspace } from "@/lib/types";
+import { getWorkspace } from "../queries";
 
 const app = new Hono()
   .get("/", sessionMiddleware, async (c) => {
@@ -41,6 +42,20 @@ const app = new Hono()
     );
 
     return successResponse(c, workspaces);
+  })
+  .get("/:workspaceId", sessionMiddleware, async (c) => {
+    const user = c.get("user");
+    const db = c.get("databases");
+    const { workspaceId } = c.req.param();
+
+    const workspace = await getWorkspace({ workspaceId });
+
+    if (!workspace) {
+      c.status(StatusCodes.NOT_FOUND);
+      return errorResponse(c, "workspace not found");
+    }
+
+    return successResponse(c, { data: { workspace } });
   })
   .post(
     "/",

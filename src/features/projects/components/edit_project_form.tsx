@@ -81,14 +81,7 @@ export const EditProjectForm = ({
       image: data.image instanceof File ? data.image : "",
     };
 
-    updateProject(
-      { form: data, param: { projectId: initialValue.$id } },
-      {
-        onSuccess: () => {
-          router.refresh();
-        },
-      },
-    );
+    updateProject({ form: data, param: { projectId: initialValue.$id } });
   };
 
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {

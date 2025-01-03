@@ -69,7 +69,7 @@ export const getWorkspace = async ({
       return null;
     }
 
-    const workspace = await db.getDocument(
+    const workspace = await db.getDocument<Workspace>(
       env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
       env.NEXT_PUBLIC_APPWRITE_WORKSPACES_ID,
       workspaceId,
