@@ -57,6 +57,9 @@ export const MembersList = () => {
     );
   };
 
+  const members = data?.documents ?? [];
+  const total = data?.total ?? 0;
+
   return (
     <Card className="w-full h-full border-none shadow-none">
       <ConfirmDialog />
@@ -76,9 +79,8 @@ export const MembersList = () => {
       </div>
 
       <CardContent className="p-7">
-        {data &&
-          "data" in data &&
-          data.data.documents.map((member, idx) => (
+        {members &&
+          members.map((member, idx) => (
             <React.Fragment key={member.$id}>
               <div className="flex items-center gap-2">
                 <MemberAvatar
@@ -130,8 +132,7 @@ export const MembersList = () => {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-
-              {idx < data.data.total - 1 && <Separator className="my-2.5" />}
+              {idx < total - 1 && <Separator className="my-2.5" />}
             </React.Fragment>
           ))}
       </CardContent>

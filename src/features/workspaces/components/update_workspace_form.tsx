@@ -117,14 +117,7 @@ export const EditWorkspaceForm = ({
       return;
     }
 
-    resetInviteCode(
-      { param: { workspaceId: initialValue.$id } },
-      {
-        onSuccess: () => {
-          router.refresh();
-        },
-      },
-    );
+    resetInviteCode({ param: { workspaceId: initialValue.$id } });
   };
 
   return (

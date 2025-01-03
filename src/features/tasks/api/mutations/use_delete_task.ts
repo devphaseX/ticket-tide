@@ -35,7 +35,6 @@ export const useDeleteTask = () => {
       }
 
       toast.success("task deleted successfully");
-      router.refresh();
       await Promise.allSettled([
         queryClient.invalidateQueries({
           queryKey: [

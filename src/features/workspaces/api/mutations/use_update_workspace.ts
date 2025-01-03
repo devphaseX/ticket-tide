@@ -33,7 +33,6 @@ export const useUpdateWorkspace = () => {
       if (!data.success) {
         return;
       }
-      router.refresh();
       await Promise.allSettled([
         queryClient.invalidateQueries({ queryKey: ["workspaces"] }),
         queryClient.invalidateQueries({
