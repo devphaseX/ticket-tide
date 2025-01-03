@@ -51,6 +51,30 @@ const app = new Hono()
       return successResponse(c, { data: projects });
     },
   )
+  .get("/:projectId", sessionMiddleware, async (c) => {
+    const user = c.get("user");
+    const db = c.get("databases");
+    const { projectId } = c.req.param();
+
+    const project = await getProject({ projectId });
+
+    if (!project) {
+      c.status(StatusCodes.NOT_FOUND);
+      return errorResponse(c, "project not found");
+    }
+
+    const member = await getMember({
+      workspaceId: project.workspaceId,
+      userId: user.$id,
+      databases: db,
+    });
+
+    if (!member) {
+      c.status(StatusCodes.FORBIDDEN);
+      return errorResponse(c, "unauthorized");
+    }
+    return successResponse(c, { data: { project } });
+  })
   .post(
     "/",
     sessionMiddleware,
