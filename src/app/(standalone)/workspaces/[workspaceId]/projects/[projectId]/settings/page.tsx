@@ -2,6 +2,7 @@ import { auth } from "@/features/api/server/get_current_user";
 import { EditProjectForm } from "@/features/projects/components/edit_project_form";
 import { getProject } from "@/features/projects/queries";
 import { redirect } from "next/navigation";
+import { ProjectIdSettingsClient } from "./client";
 
 interface CurrentPrijectSettingsPageProps {
   params: {
@@ -18,19 +19,7 @@ const CurrentProjectSettingsPage = async ({
     return redirect("/");
   }
 
-  const project = await getProject({
-    projectId: params.projectId,
-  });
-
-  if (!project) {
-    throw new Error("project not found");
-  }
-
-  return (
-    <div className="w-full lg:max-w-xl">
-      <EditProjectForm initialValue={project} />
-    </div>
-  );
+  return <ProjectIdSettingsClient />;
 };
 
 export default CurrentProjectSettingsPage;

@@ -34,7 +34,6 @@ export const useUpdateProject = () => {
       }
 
       toast.success("updated project");
-      router.refresh();
       await Promise.allSettled([
         queryClient.invalidateQueries({
           queryKey: ["workspace_projects", data.data.workspaceId],
