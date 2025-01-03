@@ -88,14 +88,7 @@ export const EditWorkspaceForm = ({
       image: data.image instanceof File ? data.image : "",
     };
 
-    updateWorkspace(
-      { form: data, param: { workspaceId: initialValue.$id } },
-      {
-        onSuccess: () => {
-          form.reset();
-        },
-      },
-    );
+    updateWorkspace({ form: data, param: { workspaceId: initialValue.$id } });
   };
 
   function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
